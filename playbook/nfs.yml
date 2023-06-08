@@ -3,8 +3,8 @@
   hosts: all
   become: true
   vars:
-    mynfs: "10.0.0.242:/mnt/striped-tank/books"
-    mountpoint: "/books"
+    mynfs: "10.0.0.242:/mnt/tank/docker-compose"
+    mountpoint: "/docker-compose"
     permission: '0777'
     myopts: 'rw,sync'
   tasks:
