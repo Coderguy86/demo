@@ -1,0 +1,20 @@
+---
+
+- hosts: all
+  gather_facts: yes
+  tasks:
+    - name: test connection
+      ping:
+    
+    - name: cleanup dangling images
+      shell: |
+        oldimage=`docker images | grep '<none>' | awk '{print $3}'`
+        if [ -z "$oldimage" ]
+        then
+        echo "There is no dangling images found!"
+        else
+        docker rmi ${oldimage} -f
+        fi
+
+      ignore_errors: yes
+      become: true
