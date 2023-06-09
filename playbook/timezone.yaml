@@ -1,6 +1,6 @@
 ---
 - name: Set timezone on Linux machines
-  hosts: targets
+  hosts: all
   become: yes
   tasks:
     - name: Set the timezone
