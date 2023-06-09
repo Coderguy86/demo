@@ -1,5 +1,6 @@
-hosts: all
-name: 'jekyll start'
-            shell: bundle exec jekyll s
+- hosts: all
+  name: 'jekyll start'
+  task:
+    - shell: bundle exec jekyll s
             args:
                 chdir: /online-cv
