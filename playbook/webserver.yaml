@@ -1,0 +1,33 @@
+---
+- hosts: all
+  remote_user: serveradmin
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: "Install Apache, MySQL, and PHP"
+      apt:
+        pkg:
+          - apache2
+          - mysql-server
+          - python-mysqldb
+          - php
+          - php-pear
+          - php-mysql
+        state: present
+
+    - name: "Turn on Apache and MySQL and set them to run on boot"
+      service: name={{ item }} state=started enabled=yes
+      with_items:
+        - apache2
+        - mysql
+
+    - name: Create a test database
+      mysql_db: name= testDb
+                state= present
+
+    - name: Create a new user for connections
+      mysql_user: name=webapp
+                  password='$6$rounds=656000$W.dSl'
+                  priv=*.*:ALL state=present
+
+      
