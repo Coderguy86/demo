@@ -1,0 +1,52 @@
+- name: Proxmox stuff
+  hosts: all
+  vars:
+    name: ubuntu
+  tasks:
+    - set_fact:
+        yeppers: "ubuntu-{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=8') }}"
+    - proxmox_kvm:
+        api_user    : root@pam
+        api_password: Cherish2797
+        api_host    : 10.0.0.11
+        clone       : temp-ubuntu-22-04   # The VM source
+        name        : "{{ yeppers }}"  # The target VM name
+        node        : kalel
+        storage     : local-lvm
+        format      : qcow2
+        timeout     : 500  # Note: The task can take a while. Adapt
+    - name: start vm
+      proxmox_kvm:
+        api_user: root@pam
+        api_password: Cherish2797
+        api_host: 10.0.0.11
+        name: "{{ yeppers }}"
+        node: kalel
+        state: started
+    - name: firststuff
+      shell: qm list | grep "{{ yeppers }}" | awk '{ print $1 }'
+      register: thevmid
+    - name: debug
+      debug:
+        var: thevmid.stdout 
+    
+    - name: getstuff
+      shell: qm config "{{ thevmid.stdout }}" | grep ^net0 | awk -F, '{print $1}' | awk -F= '{print $2}'
+      register: stuff
+    - name: debug
+      debug:
+        var: stuff.stdout
+    - name: Pause for 5 minute to build app cache
+      ansible.builtin.pause:
+        minutes: 1
+    - name: getarp
+      shell: nmap -sT 10.0.0.0/24
+      register: nmap
+    - debug:
+        var: nmap 
+    - name: getip
+      shell: arp | grep "{{ stuff.stdout|lower | regex_replace('^\\/|\\/$', '') }}" | awk '{ print $1 }'
+      register: theip
+    - debug:
+        var: theip
+    
