@@ -1,33 +1,61 @@
 ---
 - hosts: all
-  remote_user: serveradmin
-  become: yes
-  become_method: sudo
+  become: true
+  vars:
+    created_username: josh13x12
+
   tasks:
-    - name: "Install Apache, MySQL, and PHP"
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Setup passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Create a new regular user with sudo privileges
+      user:
+        name: "{{ created_username }}"
+        state: present
+        groups: sudo
+        append: true
+        create_home: true
+
+    - name: Set authorized key for remote user
+      ansible.posix.authorized_key:
+        user: "{{ created_username }}"
+        state: present
+        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+    - name: Disable password authentication for root
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        state: present
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+
+    - name: Update apt and install required system packages
       apt:
         pkg:
-          - apache2
-          - mysql-server
-          - python-mysqldb
-          - php
-          - php-pear
-          - php-mysql
-        state: present
+          - curl
+          - vim
+          - git
+          - ufw
+        state: latest
+        update_cache: true
 
-    - name: "Turn on Apache and MySQL and set them to run on boot"
-      service: name={{ item }} state=started enabled=yes
-      with_items:
-        - apache2
-        - mysql
+    - name: UFW - Allow SSH connections
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
 
-    - name: Create a test database
-      mysql_db: name= testDb
-                state= present
-
-    - name: Create a new user for connections
-      mysql_user: name=webapp
-                  password='$6$rounds=656000$W.dSl'
-                  priv=*.*:ALL state=present
-
-      
+    - name: UFW - Enable and deny by default
+      community.general.ufw:
+        state: enabled
+        default: deny
