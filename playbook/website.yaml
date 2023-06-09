@@ -1,6 +1,0 @@
-- hosts: all
-  name: 'jekyll start'
-  task:
-    - command: bundle exec jekyll s
-            args:
-                chdir: /online-cv
