@@ -1,0 +1,5 @@
+hosts: 192.168.1.110
+name: 'jekyll start'
+            command: bundle exec jekyll s
+            args:
+                chdir: /online-cv
