@@ -8,3 +8,6 @@
         state: present
         update_cache: true
       become: true
+
+    - name: reboot host
+      reboot:
