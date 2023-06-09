@@ -1,0 +1,8 @@
+---
+- name: Set timezone on Linux machines
+  hosts: targets
+  become: yes
+  tasks:
+    - name: Set the timezone
+      ansible.builtin.timezone:
+        name: America/New_York
